@@ -652,6 +652,10 @@ static void stop_vfs_read_hook()
     ksu_vfs_read_hook = false;
     pr_info("stop vfs_read_hook\n");
 #endif
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+	susfs_is_sus_su_ready = true;
+	pr_info("susfs: sus_su is ready\n");
+#endif
 }
 
 static void stop_execve_hook()
