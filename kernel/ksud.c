@@ -679,8 +679,12 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
     if (!filename_user)
         return 0;
 
-    memset(path, 0, sizeof(path));
-    ksu_strncpy_from_user_nofault(path, *filename_user, 32);
+	long len = ksu_strncpy_from_user_nofault(path, filename_user, 32);
+	if (len <= 0)
+		return 0;
+
+	path[sizeof(path) - 1] = '\0';
+    
     filename_in.name = path;
 
     filename_p = &filename_in;
