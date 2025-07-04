@@ -101,6 +101,7 @@ endif
 # Check credential system compatibility
 # Force old credential system (atomic_t) for stability
 $(info -- Credential System: atomic_t (Compatible with Magic-KSU/APatch))
+ccflags-y += -DKSU_COMPAT_OLD_MANAGERS
 else
 $(info -- Credential System: atomic_long_t (Modern SukiSU/RKSU))
 endif
