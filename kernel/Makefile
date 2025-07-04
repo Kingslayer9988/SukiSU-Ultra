@@ -93,9 +93,16 @@ $(info -- KERNEL_TYPE: $(KERNEL_TYPE))
 
 # Check if KPM is enabled
 ifeq ($(CONFIG_KPM),y)
-$(info -- KPM is enabled)
+$(info -- KPM Support: ENABLED)
 else
-$(info -- KPM is disabled)
+$(info -- KPM Support: DISABLED)
+endif
+
+# Check credential system compatibility
+ifeq ($(CONFIG_KSU_COMPAT_OLD_MANAGERS),y)
+$(info -- Credential System: atomic_t (Compatible with Magic-KSU/APatch))
+else
+$(info -- Credential System: atomic_long_t (Modern SukiSU/RKSU))
 endif
 
 # SELinux 驱动程序检查
@@ -160,9 +167,21 @@ ccflags-y += -DKSU_MANAGER_PACKAGE=\"$(KSU_MANAGER_PACKAGE)\"
 $(info -- SukiSU Manager package name: $(KSU_MANAGER_PACKAGE))
 endif
 
-$(info -- SukiSU Manager signature size: $(KSU_EXPECTED_SIZE))
-$(info -- SukiSU Manager signature hash: $(KSU_EXPECTED_HASH))
-$(info -- Supported Unofficial Manager: 5ec1cff (GKI) rsuntk (Non-GKI) ShirkNeko udochina (GKI and non-GKI and KPM))
+$(info -- Primary SukiSU Manager signature size: $(KSU_EXPECTED_SIZE))
+$(info -- Primary SukiSU Manager signature hash: $(KSU_EXPECTED_HASH))
+
+# Multi-Manager Support Information
+ifeq ($(CONFIG_KSU_MULTI_MANAGER_SUPPORT),y)
+$(info -- Multi-Manager Support: ENABLED)
+$(info -- Supported Managers: SukiSU, RKSU, Magic-KSU (5ec1cff), ksu-next, backslashxx, Neko)
+ifeq ($(CONFIG_KSU_COMPAT_OLD_MANAGERS),y)
+$(info -- Old Manager Compatibility: ENABLED (atomic_t mode for Magic-KSU/APatch))
+else
+$(info -- Old Manager Compatibility: DISABLED (atomic_long_t mode for modern managers))
+endif
+else
+$(info -- Multi-Manager Support: DISABLED (SukiSU only))
+endif
 
 ccflags-y += -DEXPECTED_SIZE=$(KSU_EXPECTED_SIZE)
 ccflags-y += -DEXPECTED_HASH=\"$(KSU_EXPECTED_HASH)\"
@@ -174,9 +193,12 @@ ccflags-y += -Wno-declaration-after-statement -Wno-unused-function
 ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
 $(eval SUSFS_VERSION=$(shell cat $(srctree)/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g'))
 $(info )
+$(info -- SUSFS Integration: ENABLED)
 $(info -- SUSFS_VERSION: $(SUSFS_VERSION))
 else
-$(info -- You have not integrate susfs in your kernel.)
+$(info )
+$(info -- SUSFS Integration: DISABLED)
+$(info -- Note: SUSFS is not integrated in your kernel)
 $(info -- Read: https://gitlab.com/simonpunk/susfs4ksu)
 endif
 # Keep a new line here!! Because someone may append config
