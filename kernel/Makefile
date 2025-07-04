@@ -99,11 +99,9 @@ $(info -- KPM Support: DISABLED)
 endif
 
 # Check credential system compatibility
-ifeq ($(CONFIG_KSU_COMPAT_OLD_MANAGERS),y)
+# Force old credential system (atomic_t) for stability
 $(info -- Credential System: atomic_t (Compatible with Magic-KSU/APatch))
-else
-$(info -- Credential System: atomic_long_t (Modern SukiSU/RKSU))
-endif
+ccflags-y += -DKSU_COMPAT_OLD_MANAGERS
 
 # SELinux 驱动程序检查
 ifeq ($(shell grep -q "current_sid(void)" $(srctree)/security/selinux/include/objsec.h; echo $$?),0)
@@ -174,11 +172,8 @@ $(info -- Primary SukiSU Manager signature hash: $(KSU_EXPECTED_HASH))
 ifeq ($(CONFIG_KSU_MULTI_MANAGER_SUPPORT),y)
 $(info -- Multi-Manager Support: ENABLED)
 $(info -- Supported Managers: SukiSU, RKSU, Magic-KSU (5ec1cff), ksu-next, backslashxx, Neko)
-ifeq ($(CONFIG_KSU_COMPAT_OLD_MANAGERS),y)
+# Force old manager compatibility
 $(info -- Old Manager Compatibility: ENABLED (atomic_t mode for Magic-KSU/APatch))
-else
-$(info -- Old Manager Compatibility: DISABLED (atomic_long_t mode for modern managers))
-endif
 else
 $(info -- Multi-Manager Support: DISABLED (SukiSU only))
 endif
